@@ -78,6 +78,7 @@
 
     <label for="zeitraum">Zeitraum:</label>
     <select id="zeitraum">
+      <option value="woche">📆 Woche</option>
       <option value="monat">📅 Monat</option>
       <option value="jahr">📆 Jahr</option>
       <option value="gesamt">📈 Gesamt</option>
@@ -139,12 +140,27 @@
     function istImZeitraum(datum, zeitraum) {
       const heute = new Date();
       const d = new Date(datum);
+
+      if (zeitraum === "woche") {
+        const start = new Date(heute);
+        const day = heute.getDay();
+        const diff = heute.getDate() - day + (day === 0 ? -6 : 1); // Montag = Wochenstart
+        start.setDate(diff);
+        start.setHours(0, 0, 0, 0);
+
+        const ende = new Date(start);
+        ende.setDate(start.getDate() + 7);
+
+        return d >= start && d < ende;
+      }
+
       if (zeitraum === "monat") {
         return d.getMonth() === heute.getMonth() && d.getFullYear() === heute.getFullYear();
       } else if (zeitraum === "jahr") {
         return d.getFullYear() === heute.getFullYear();
       }
-      return true;
+
+      return true; // gesamt
     }
 
     async function ladeDaten() {
