@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Statistik</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 850px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+      color: #1565c0;
+    }
+    select, button {
+      padding: 10px 15px;
+      margin: 10px 10px 20px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    .stats {
+      margin-top: 30px;
+    }
+    .stat-block {
+      background: #e3f2fd;
+      padding: 16px;
+      margin-bottom: 15px;
+      border-left: 5px solid #2196f3;
+      border-radius: 8px;
+      font-size: 18px;
+    }
+    #schuelerAuswahl label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .back-button {
+      background: #1565c0;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    .back-button:hover {
+      background-color: #0d47a1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📊 Statistik</h2>
+
+    <label for="modus">Modus:</label>
+    <select id="modus">
+      <option value="schueler">👨‍🎓 Schüler</option>
+      <option value="finanzen">💰 Finanzen</option>
+    </select>
+
+    <div id="schuelerAuswahl" style="display:none;">
+      <label for="schuelerSelect">Schüler auswählen:</label>
+      <select id="schuelerSelect"></select>
+    </div>
+
+    <label for="zeitraum">Zeitraum:</label>
+    <select id="zeitraum">
+      <option value="monat">📅 Monat</option>
+      <option value="jahr">📆 Jahr</option>
+      <option value="gesamt">📈 Gesamt</option>
+    </select>
+
+    <div class="stats" id="statsAnzeige"></div>
+
+    <button onclick="window.location.href='dashboard.html'" class="back-button">
+      🔙 Zurück zum Dashboard
+    </button>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxBY3DCqSuEuivntWrxdXJP7lubL0Ri1k",
+      authDomain: "unterricht-tracker-c3746.firebaseapp.com",
+      projectId: "unterricht-tracker-c3746",
+      storageBucket: "unterricht-tracker-c3746.appspot.com",
+      messagingSenderId: "117117875760",
+      appId: "1:117117875760:web:a67954a96c76abbac29ff5"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const modusSelect = document.getElementById("modus");
+    const zeitraumSelect = document.getElementById("zeitraum");
+    const statsDiv = document.getElementById("statsAnzeige");
+    const schuelerAuswahl = document.getElementById("schuelerAuswahl");
+    const schuelerSelect = document.getElementById("schuelerSelect");
+
+    modusSelect.addEventListener("change", aktualisiereAnsicht);
+    zeitraumSelect.addEventListener("change", ladeDaten);
+    schuelerSelect.addEventListener("change", ladeDaten);
+
+    async function aktualisiereAnsicht() {
+      if (modusSelect.value === "schueler") {
+        schuelerAuswahl.style.display = "block";
+        await ladeSchuelerListe();
+      } else {
+        schuelerAuswahl.style.display = "none";
+        ladeDaten();
+      }
+    }
+
+    async function ladeSchuelerListe() {
+      schuelerSelect.innerHTML = "";
+      const snapshot = await db.collection("schueler").orderBy("name").get();
+      snapshot.forEach(doc => {
+        const option = document.createElement("option");
+        option.value = doc.id;
+        option.textContent = doc.data().name;
+        schuelerSelect.appendChild(option);
+      });
+      ladeDaten();
+    }
+
+    function istImZeitraum(datum, zeitraum) {
+      const heute = new Date();
+      const d = new Date(datum);
+      if (zeitraum === "monat") {
+        return d.getMonth() === heute.getMonth() && d.getFullYear() === heute.getFullYear();
+      } else if (zeitraum === "jahr") {
+        return d.getFullYear() === heute.getFullYear();
+      }
+      return true;
+    }
+
+    async function ladeDaten() {
+      statsDiv.innerHTML = "";
+      const zeitraum = zeitraumSelect.value;
+
+      if (modusSelect.value === "schueler") {
+        const schuelerId = schuelerSelect.value;
+        const snapshot = await db.collection("schueler").doc(schuelerId).collection("eintraege").get();
+        const eintraege = snapshot.docs.map(d => d.data()).filter(e => istImZeitraum(e.datum, zeitraum));
+        const anzahl = eintraege.length;
+
+        const div = document.createElement("div");
+        div.classList.add("stat-block");
+        div.innerHTML = `📚 Unterrichtseinheiten: <strong>${anzahl}</strong>`;
+        statsDiv.appendChild(div);
+
+      } else if (modusSelect.value === "finanzen") {
+        const schuelerSnap = await db.collection("schueler").get();
+        let gesamt = 0;
+        for (const schuelerDoc of schuelerSnap.docs) {
+          const eintraegeSnap = await db.collection("schueler").doc(schuelerDoc.id).collection("eintraege").get();
+          eintraegeSnap.forEach(doc => {
+            const eintrag = doc.data();
+            if (eintrag.betrag && istImZeitraum(eintrag.datum, zeitraum)) {
+              gesamt += parseFloat(eintrag.betrag);
+            }
+          });
+        }
+
+        const div = document.createElement("div");
+        div.classList.add("stat-block");
+        div.innerHTML = `💶 Gesamtbetrag: <strong>${gesamt.toFixed(2)} €</strong>`;
+        statsDiv.appendChild(div);
+      }
+    }
+
+    aktualisiereAnsicht();
+  </script>
+</body>
+</html>

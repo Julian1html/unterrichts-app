@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schülerliste</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    h1, h3 {
+      color: #1565c0;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to right, #ffffff, #f0f4f8);
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    li:hover {
+      transform: scale(1.01);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    li span {
+      cursor: pointer;
+      flex-grow: 1;
+      font-size: 16px;
+    }
+
+    li button {
+      background: none;
+      border: none;
+      color: #d32f2f;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    li:hover button {
+      opacity: 1;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 70%;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-right: 10px;
+      box-sizing: border-box;
+    }
+
+    form button[type="submit"],
+    .zurueck-button {
+      padding: 10px 20px;
+      background: #1565c0;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    form button[type="submit"]:hover,
+    .zurueck-button:hover {
+      background-color: #0d47a1;
+    }
+
+    .zurueck-button {
+      margin-top: 20px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>👨‍🎓 Schülerliste</h1>
+    <ul id="schuelerListe"></ul>
+
+    <h3>Neuen Schüler hinzufügen</h3>
+    <form id="addForm">
+      <input type="text" id="nameInput" placeholder="Name des Schülers" required />
+      <button type="submit">➕ Hinzufügen</button>
+    </form>
+
+    <button onclick="window.location.href='dashboard.html'" class="zurueck-button">🔙 Zurück zum Dashboard</button>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxBY3DCqSuEuivntWrxdXJP7lubL0Ri1k",
+      authDomain: "unterricht-tracker-c3746.firebaseapp.com",
+      projectId: "unterricht-tracker-c3746",
+      storageBucket: "unterricht-tracker-c3746.appspot.com",
+      messagingSenderId: "117117875760",
+      appId: "1:117117875760:web:a67954a96c76abbac29ff5",
+      measurementId: "G-EYJ9YYWGRK"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const liste = document.getElementById("schuelerListe");
+
+    function ladeSchueler() {
+      liste.innerHTML = "";
+      db.collection("schueler").orderBy("name").get().then(snapshot => {
+        snapshot.forEach(doc => {
+          const schueler = doc.data();
+          const li = document.createElement("li");
+
+          const nameSpan = document.createElement("span");
+          nameSpan.textContent = schueler.name;
+          nameSpan.onclick = () => {
+            window.location.href = `schueler_detail.html?id=${doc.id}`;
+          };
+
+          const loeschenBtn = document.createElement("button");
+          loeschenBtn.textContent = "❌";
+          loeschenBtn.title = "Löschen";
+          loeschenBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (confirm("Diesen Schüler wirklich löschen?")) {
+              await db.collection("schueler").doc(doc.id).delete();
+              ladeSchueler();
+            }
+          };
+
+          li.appendChild(nameSpan);
+          li.appendChild(loeschenBtn);
+          liste.appendChild(li);
+        });
+      });
+    }
+
+    document.getElementById("addForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("nameInput").value.trim();
+      if (name) {
+        await db.collection("schueler").add({ name, beschreibung: "" });
+        document.getElementById("nameInput").value = "";
+        ladeSchueler();
+      }
+    });
+
+    ladeSchueler();
+  </script>
+</body>
+</html>

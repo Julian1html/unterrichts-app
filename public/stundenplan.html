@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stundenplan</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 {
+      color: #1565c0;
+    }
+
+    .back-button, .open-modal-button {
+      background: #1565c0;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-bottom: 20px;
+      margin-right: 10px;
+    }
+
+    .back-button:hover, .open-modal-button:hover {
+      background-color: #0d47a1;
+    }
+
+    .tag-box {
+      background: #e3f2fd;
+      padding: 16px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background: #ffffff;
+      margin-bottom: 8px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .delete-button {
+      background: none;
+      border: none;
+      color: red;
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    li:hover .delete-button {
+      opacity: 1;
+    }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+      background-color: #f1f8ff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .modal input, .modal select, .modal button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .modal button[type="submit"] {
+      background-color: #1565c0;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .modal button[type="submit"]:hover {
+      background-color: #0d47a1;
+    }
+
+    .close-button {
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      color: #444;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button onclick="window.location.href='dashboard.html'" class="back-button">⬅️ Zurück zur Übersicht</button>
+    <button class="open-modal-button" onclick="openModal()">➕ Termin hinzufügen</button>
+
+    <h1>📅 Mein Stundenplan</h1>
+
+    <div id="stundenplan">
+      <!-- Wochentage werden hier gefüllt -->
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="terminModal" class="modal">
+    <div class="modal-content">
+      <button class="close-button" onclick="closeModal()">×</button>
+      <h2>Neuen Termin hinzufügen</h2>
+      <form id="stundenplan-form">
+        <label>Wochentag:</label>
+        <select id="wochentag" required>
+          <option value="">Bitte wählen</option>
+          <option value="Montag">Montag</option>
+          <option value="Dienstag">Dienstag</option>
+          <option value="Mittwoch">Mittwoch</option>
+          <option value="Donnerstag">Donnerstag</option>
+          <option value="Freitag">Freitag</option>
+          <option value="Samstag">Samstag</option>
+          <option value="Sonntag">Sonntag</option>
+        </select>
+
+        <label>Uhrzeit:</label>
+        <input type="time" id="uhrzeit" required />
+
+        <label>Name:</label>
+        <input type="text" id="beschreibung" placeholder="Name" required />
+
+        <button type="submit">✅ Speichern</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxBY3DCqSuEuivntWrxdXJP7lubL0Ri1k",
+      authDomain: "unterricht-tracker-c3746.firebaseapp.com",
+      projectId: "unterricht-tracker-c3746",
+      storageBucket: "unterricht-tracker-c3746.appspot.com",
+      messagingSenderId: "117117875760",
+      appId: "1:117117875760:web:a67954a96c76abbac29ff5",
+      measurementId: "G-EYJ9YYWGRK"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const wochentage = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+    const stundenplanContainer = document.getElementById("stundenplan");
+    const tagListen = {};
+
+    wochentage.forEach(tag => {
+      const tagBox = document.createElement("div");
+      tagBox.classList.add("tag-box");
+      tagBox.innerHTML = `<h2>${tag}</h2><ul id="${tag}-liste"></ul>`;
+      stundenplanContainer.appendChild(tagBox);
+      tagListen[tag] = document.getElementById(`${tag}-liste`);
+    });
+
+    function ladeStundenplan() {
+      Object.values(tagListen).forEach(ul => ul.innerHTML = "");
+
+      db.collection("stundenplan").orderBy("uhrzeit").get().then(snapshot => {
+        snapshot.forEach(doc => {
+          const eintrag = doc.data();
+          const li = document.createElement("li");
+          li.textContent = `${eintrag.uhrzeit} – ${eintrag.beschreibung}`;
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "❌";
+          deleteBtn.className = "delete-button";
+          deleteBtn.onclick = async () => {
+            const bestaetigung = confirm("Möchtest du diesen Eintrag wirklich löschen?");
+            if (bestaetigung) {
+              await db.collection("stundenplan").doc(doc.id).delete();
+              li.remove();
+            }
+          };
+
+          li.appendChild(deleteBtn);
+          if (tagListen[eintrag.tag]) {
+            tagListen[eintrag.tag].appendChild(li);
+          }
+        });
+      });
+    }
+
+    ladeStundenplan();
+
+    document.getElementById("stundenplan-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const tag = document.getElementById("wochentag").value;
+      const uhrzeit = document.getElementById("uhrzeit").value;
+      const beschreibung = document.getElementById("beschreibung").value;
+
+      await db.collection("stundenplan").add({ tag, uhrzeit, beschreibung });
+      ladeStundenplan();
+      closeModal();
+      this.reset();
+    });
+
+    function openModal() {
+      document.getElementById("terminModal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("terminModal").style.display = "none";
+    }
+
+    // Schließen beim Klick außerhalb des Modals
+    window.onclick = function(event) {
+      const modal = document.getElementById("terminModal");
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+  </script>
+</body>
+</html>

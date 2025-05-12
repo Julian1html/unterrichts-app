@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(to right, #dceefc, #f4faff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: #333;
+    }
+
+    .login-box {
+      background: #ffffff;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+    }
+
+    .login-box h2 {
+      margin-bottom: 24px;
+      font-size: 24px;
+      color: #2a5d9e;
+    }
+
+    input {
+      width: 90%;
+      padding: 10px 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.2s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #2a9be7;
+      box-shadow: 0 0 4px rgba(42, 155, 231, 0.3);
+    }
+
+    button {
+      width: 90%;
+      padding: 11px;
+      background: #2a9be7;
+      color: white;
+      font-size: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 12px;
+    }
+
+    button:hover {
+      background: #1f7ac2;
+    }
+
+    #login-error {
+      color: #d9534f;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 400px) {
+      .login-box {
+        padding: 30px 20px;
+      }
+      input, button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <h2>Login</h2>
+    <form id="login-form">
+      <input type="text" id="username" placeholder="Name" required />
+      <input type="password" id="pin" placeholder="PIN" required />
+      <button type="submit">Einloggen</button>
+    </form>
+    <div id="login-error"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxBY3DCqSuEuivntWrxdXJP7lubL0Ri1k",
+      authDomain: "unterricht-tracker-c3746.firebaseapp.com",
+      projectId: "unterricht-tracker-c3746",
+      storageBucket: "unterricht-tracker-c3746.appspot.com",
+      messagingSenderId: "117117875760",
+      appId: "1:117117875760:web:a67954a96c76abbac29ff5",
+      measurementId: "G-EYJ9YYWGRK"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    document.getElementById("login-form").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const pin = document.getElementById("pin").value.trim();
+
+      try {
+        const snapshot = await db.collection("nutzer")
+          .where("name", "==", username)
+          .where("pin", "==", pin)
+          .get();
+
+        if (!snapshot.empty) {
+          sessionStorage.setItem("user", username);
+          window.location.href = "dashboard.html";
+        } else {
+          document.getElementById("login-error").textContent = "Ungültiger Name oder PIN.";
+        }
+      } catch (error) {
+        console.error("Fehler beim Login:", error);
+        document.getElementById("login-error").textContent = "Verbindungsfehler. Bitte versuche es erneut.";
+      }
+    });
+  </script>
+
+</body>
+</html>
