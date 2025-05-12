@@ -135,6 +135,12 @@
   </style>
 </head>
 <body>
+  <script>
+  if (!sessionStorage.getItem("user")) {
+    window.location.href = "index.html";
+  }
+</script>
+
   <div class="container">
     <button onclick="window.location.href='dashboard.html'" class="back-button">⬅️ Zurück zur Übersicht</button>
     <button class="open-modal-button" onclick="openModal()">➕ Termin hinzufügen</button>

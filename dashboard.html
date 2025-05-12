@@ -92,6 +92,12 @@
   </style>
 </head>
 <body>
+  <script>
+    if (!sessionStorage.getItem("user")) {
+      window.location.href = "index.html";
+    }
+  </script>
+
   <button id="logout-btn" class="logout-button" title="Logout">🚪</button>
 
   <div class="dashboard-container">
