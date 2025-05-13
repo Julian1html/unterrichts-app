@@ -5,128 +5,139 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Schülerdetails</title>
 
-  <!-- ❶ DESIGN an Maßstab angelehnt -->
   <style>
-    /* Hintergrund & Grundschrift */
-    body{
-      font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
-      background:linear-gradient(to right,#e3f2fd,#ffffff);
-      margin:0;
-      padding:20px;
-      color:#333;
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      margin: 0;
+      padding: 20px;
+      color: #333;
     }
 
-    /* Zentrale Karte */
-    .container{
-      max-width:850px;
-      margin:auto;
-      background:#fff;
-      padding:30px;
-      border-radius:16px;
-      box-shadow:0 8px 20px rgba(0,0,0,.1);
+    .container {
+      max-width: 850px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, .1);
+      position: relative;
     }
 
-    /* Überschriften */
-    h2,h3{
-      margin-top:0;
-      color:#1565c0;
+    .top-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
-    /* Buttons (groß) */
-    button{
-      padding:10px 15px;
-      margin:10px 10px 20px 0;
-      border-radius:8px;
-      border:none;
-      font-size:16px;
-      cursor:pointer;
-      transition:background .3s ease;
-      background:#1565c0;
-      color:#fff;
-    }
-    button:hover{background:#0d47a1;}
-
-    /* Lösch-Buttons innerhalb Eintrag (klein) */
-    button.small{
-      background:none;
-      color:#d32f2f;
-      padding:4px 8px;
-      font-size:18px;
-      display:none;
+    h2, h3 {
+      margin-top: 0;
+      color: #1565c0;
     }
 
-    /* Eingabefelder */
-    input,textarea{
-      width:100%;
-      padding:10px 12px;
-      margin-top:5px;margin-bottom:15px;
-      border-radius:8px;
-      border:1px solid #ccc;
-      font-size:15px;
-      transition:border .2s,box-shadow .2s;
-      box-sizing:border-box;
+    button {
+      padding: 10px 15px;
+      margin: 10px 10px 20px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background .3s ease;
+      background: #1565c0;
+      color: #fff;
     }
-    input:hover,textarea:hover{
-      border-color:#1565c0;
-      box-shadow:0 0 6px rgba(21,101,192,.25);
-    }
-    input:focus,textarea:focus{
-      outline:none;
-      border-color:#1565c0;
-      box-shadow:0 0 6px rgba(21,101,192,.4);
+    button:hover {
+      background: #0d47a1;
     }
 
-    /* Einträge-Box */
-    .unterrichtseintrag{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      background:#e3f2fd;
-      padding:16px;
-      margin-bottom:12px;
-      border-left:5px solid #2196f3;
-      border-radius:8px;
-      box-shadow:0 2px 6px rgba(0,0,0,.05);
+    button.small {
+      background: none;
+      color: #1565c0;
+      padding: 4px 8px;
+      font-size: 18px;
+      display: none;
     }
-    .unterrichtseintrag:hover button.small{display:inline;}
 
-    /* Pop-up */
-    #popup{
-      display:none;
-      position:fixed;
-      top:15%;
-      left:50%;
-      transform:translateX(-50%);
-      background:#fff;
-      padding:25px;
-      border-radius:16px;
-      box-shadow:0 8px 20px rgba(0,0,0,.25);
-      z-index:1000;
-      width:90%;max-width:500px;
-      text-align:center;
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      box-sizing: border-box;
     }
-    #popup input,#popup textarea{max-width:460px;margin:auto;margin-bottom:12px;}
+    input:hover, textarea:hover {
+      border-color: #1565c0;
+      box-shadow: 0 0 6px rgba(21, 101, 192, .25);
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #1565c0;
+      box-shadow: 0 0 6px rgba(21, 101, 192, .4);
+    }
 
-    /* Overlay */
-    #overlay{
-      display:none;
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.4);
-      z-index:999;
+    .unterrichtseintrag {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      background: #e3f2fd;
+      padding: 16px;
+      margin-bottom: 12px;
+      border-left: 5px solid #2196f3;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .05);
+    }
+    .unterrichtseintrag:hover button.small {
+      display: inline;
+    }
+
+    #popup {
+      display: none;
+      position: fixed;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, .25);
+      z-index: 1000;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .4);
+      z-index: 999;
+    }
+
+    #popup input, #popup textarea {
+      max-width: 460px;
+      margin: auto;
+      margin-bottom: 12px;
     }
   </style>
 </head>
 
 <body>
-
   <script>
-  if (!sessionStorage.getItem("user")) {
-    window.location.href = "index.html";
-  }
-</script>
+    if (!sessionStorage.getItem("user")) {
+      window.location.href = "index.html";
+    }
+  </script>
 
   <div class="container">
+    <!-- Navigation Buttons oben links inkl. Stunde hinzufügen -->
+    <div class="top-buttons">
+      <button onclick="window.location.href='schueler.html'">🔙 Zurück zur Übersicht</button>
+      <button onclick="zeigePopup('hinzufügen')">➕ Stunde hinzufügen</button>
+    </div>
+
     <h2 id="schuelerName">Schüler: …</h2>
 
     <h3>📝 Beschreibung</h3>
@@ -135,121 +146,143 @@
 
     <h3>📚 Unterrichtseinträge</h3>
     <div id="eintraege"></div>
-
-    <button onclick="zeigePopup()">➕ Stunde hinzufügen</button>
-    <button onclick="window.location.href='schueler.html'">🔙 Zurück zur Schülerliste</button>
   </div>
 
-  <!-- Pop-up -->
   <div id="overlay" onclick="versteckePopup()"></div>
   <div id="popup">
-    <h3>Neue Stunde hinzufügen</h3>
-    <input type="date" id="datum">
-    <textarea id="inhalt" rows="2" placeholder="Inhalt der Stunde"></textarea>
+    <h3 id="popupTitel">Neue Stunde hinzufügen</h3>
+    <input type="date" id="datum" required>
+    <textarea id="inhalt" rows="2" placeholder="Inhalt der Stunde" required></textarea>
     <textarea id="ziel" rows="2" placeholder="Ziel für das nächste Mal (optional)"></textarea>
-    <input type="number" id="betrag" placeholder="Betrag (€)">
-    <button onclick="eintragHinzufuegen()">✅ Speichern</button>
+    <input type="number" id="betrag" placeholder="Betrag (€)" required>
+    <button id="popupSpeichern">✅ Speichern</button>
     <button onclick="versteckePopup()">❌ Abbrechen</button>
   </div>
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
-    /* Firebase-Setup */
-    const firebaseConfig={
-      apiKey:"AIzaSyAxBY3DCqSuEuivntWrxdXJP7lubL0Ri1k",
-      authDomain:"unterricht-tracker-c3746.firebaseapp.com",
-      projectId:"unterricht-tracker-c3746",
-      storageBucket:"unterricht-tracker-c3746.appspot.com",
-      messagingSenderId:"117117875760",
-      appId:"1:117117875760:web:a67954a96c76abbac29ff5"
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxBY3DCqSuEuivntWrxdXJP7lubL0Ri1k",
+      authDomain: "unterricht-tracker-c3746.firebaseapp.com",
+      projectId: "unterricht-tracker-c3746",
+      storageBucket: "unterricht-tracker-c3746.appspot.com",
+      messagingSenderId: "117117875760",
+      appId: "1:117117875760:web:a67954a96c76abbac29ff5"
     };
     firebase.initializeApp(firebaseConfig);
-    const db=firebase.firestore();
+    const db = firebase.firestore();
 
-    /* DOM-Elemente */
-    const nameEl=document.getElementById("schuelerName");
-    const beschreibungEl=document.getElementById("beschreibung");
-    const eintraegeEl=document.getElementById("eintraege");
-    const params=new URLSearchParams(window.location.search);
-    const schuelerId=params.get("id");
-    let letztesZiel="";
+    const nameEl = document.getElementById("schuelerName");
+    const beschreibungEl = document.getElementById("beschreibung");
+    const eintraegeEl = document.getElementById("eintraege");
+    const schuelerId = new URLSearchParams(window.location.search).get("id");
+    let letztesZiel = "";
+    let bearbeiteEintragId = null;
 
-    /* Daten laden */
-    async function ladeDetails(){
-      const doc=await db.collection("schueler").doc(schuelerId).get();
-      if(!doc.exists){nameEl.textContent="Schüler nicht gefunden!";return;}
-      const daten=doc.data();
-      nameEl.textContent="Schüler: "+daten.name;
-      beschreibungEl.value=daten.beschreibung||"";
+    async function ladeDetails() {
+      const doc = await db.collection("schueler").doc(schuelerId).get();
+      if (!doc.exists) { nameEl.textContent = "Schüler nicht gefunden!"; return; }
+      nameEl.textContent = "Schüler: " + doc.data().name;
+      beschreibungEl.value = doc.data().beschreibung || "";
       ladeEintraege();
     }
 
-    async function beschreibungSpeichern(){
+    async function beschreibungSpeichern() {
       await db.collection("schueler").doc(schuelerId)
-              .update({beschreibung:beschreibungEl.value});
+              .update({ beschreibung: beschreibungEl.value });
       alert("Beschreibung gespeichert");
     }
 
-    /* Pop-up */
-    function zeigePopup(){
-      document.getElementById("datum").valueAsDate=new Date();
-      document.getElementById("inhalt").value=letztesZiel;
-      document.getElementById("ziel").value="";
-      document.getElementById("betrag").value="";
-      document.getElementById("popup").style.display="block";
-      document.getElementById("overlay").style.display="block";
-    }
-    function versteckePopup(){
-      document.getElementById("popup").style.display="none";
-      document.getElementById("overlay").style.display="none";
+    function formatDatum(datumString) {
+      const d = new Date(datumString);
+      return d.toLocaleDateString("de-DE");
     }
 
-    /* Eintrag hinzufügen */
-    async function eintragHinzufuegen(){
-      const datum=document.getElementById("datum").value;
-      const inhalt=document.getElementById("inhalt").value;
-      const ziel=document.getElementById("ziel").value.trim();
-      const betrag=parseFloat(document.getElementById("betrag").value);
-      if(!datum||!inhalt) return;
+    function zeigePopup(modus, eintrag = null, id = null) {
+      document.getElementById("popupTitel").textContent = modus === 'bearbeiten' ? "Eintrag bearbeiten" : "Neue Stunde hinzufügen";
+      document.getElementById("popupSpeichern").onclick = modus === 'bearbeiten'
+        ? () => eintragSpeichern(id)
+        : eintragHinzufuegen;
+
+      document.getElementById("datum").value = eintrag?.datum || new Date().toISOString().split("T")[0];
+      document.getElementById("inhalt").value = eintrag?.inhalt || letztesZiel;
+      document.getElementById("ziel").value = eintrag?.ziel || "";
+      document.getElementById("betrag").value = eintrag?.betrag || "";
+
+      document.getElementById("popup").style.display = "block";
+      document.getElementById("overlay").style.display = "block";
+    }
+
+    function versteckePopup() {
+      document.getElementById("popup").style.display = "none";
+      document.getElementById("overlay").style.display = "none";
+    }
+
+    async function eintragHinzufuegen() {
+      const datum = document.getElementById("datum").value;
+      const inhalt = document.getElementById("inhalt").value;
+      const ziel = document.getElementById("ziel").value.trim();
+      const betrag = parseFloat(document.getElementById("betrag").value);
+
+      if (!datum || !inhalt || isNaN(betrag)) {
+        alert("Bitte alle Pflichtfelder ausfüllen!");
+        return;
+      }
+
       await db.collection("schueler").doc(schuelerId)
-              .collection("eintraege").add({
-        datum,inhalt,ziel,betrag:isNaN(betrag)?null:betrag,
-        timestamp:new Date(datum)
-      });
-      letztesZiel=ziel?ziel:"";
+              .collection("eintraege").add({ datum, inhalt, ziel, betrag, timestamp: new Date(datum) });
+      letztesZiel = ziel || "";
       versteckePopup();
       ladeEintraege();
     }
 
-    /* Einträge laden */
-    async function ladeEintraege(){
-      eintraegeEl.innerHTML="";
-      letztesZiel="";
-      const snapshot=await db.collection("schueler").doc(schuelerId)
-                       .collection("eintraege")
-                       .orderBy("timestamp","desc").get();
-      snapshot.forEach(doc=>{
-        const e=doc.data();
-        if(!letztesZiel&&e.ziel) letztesZiel=e.ziel;
-        const div=document.createElement("div");
-        div.className="unterrichtseintrag";
-        div.innerHTML=`
+    async function eintragSpeichern(id) {
+      const datum = document.getElementById("datum").value;
+      const inhalt = document.getElementById("inhalt").value;
+      const ziel = document.getElementById("ziel").value.trim();
+      const betrag = parseFloat(document.getElementById("betrag").value);
+
+      if (!datum || !inhalt || isNaN(betrag)) {
+        alert("Bitte alle Pflichtfelder ausfüllen!");
+        return;
+      }
+
+      await db.collection("schueler").doc(schuelerId)
+              .collection("eintraege").doc(id).update({ datum, inhalt, ziel, betrag, timestamp: new Date(datum) });
+      versteckePopup();
+      ladeEintraege();
+    }
+
+    async function ladeEintraege() {
+      eintraegeEl.innerHTML = "";
+      letztesZiel = "";
+      const snapshot = await db.collection("schueler").doc(schuelerId)
+                               .collection("eintraege")
+                               .orderBy("timestamp", "desc").get();
+
+      snapshot.forEach(doc => {
+        const e = doc.data();
+        if (!letztesZiel && e.ziel) letztesZiel = e.ziel;
+        const div = document.createElement("div");
+        div.className = "unterrichtseintrag";
+        div.innerHTML = `
           <div>
-            <strong>${e.datum}</strong> – ${e.inhalt}
-            ${e.ziel?`<br><em>Ziel: ${e.ziel}</em>`:""}
-            ${e.betrag?`<br><small>Betrag: €${e.betrag.toFixed(2)}</small>`:""}
+            <strong>${formatDatum(e.datum)}</strong> – ${e.inhalt}
+            ${e.ziel ? `<br><em>Ziel: ${e.ziel}</em>` : ""}
+            ${e.betrag ? `<br><small>Betrag: €${e.betrag.toFixed(2)}</small>` : ""}
           </div>
-          <button class="small" onclick="eintragLoeschen('${doc.id}')">❌</button>
-        `;
+          <div>
+            <button class="small" onclick='zeigePopup("bearbeiten", ${JSON.stringify(e).replace(/'/g, "\'")}, "${doc.id}")'>✏️</button>
+            <button class="small" onclick="eintragLoeschen('${doc.id}')">❌</button>
+          </div>`;
         eintraegeEl.appendChild(div);
       });
     }
 
-    async function eintragLoeschen(id){
-      if(confirm("Eintrag wirklich löschen?")){
+    async function eintragLoeschen(id) {
+      if (confirm("Eintrag wirklich löschen?")) {
         await db.collection("schueler").doc(schuelerId)
                 .collection("eintraege").doc(id).delete();
         ladeEintraege();

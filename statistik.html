@@ -18,6 +18,7 @@
       padding: 30px;
       border-radius: 16px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      position: relative;
     }
     h2 {
       margin-top: 0;
@@ -54,10 +55,24 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
-      margin-top: 20px;
+      position: absolute;
+      top: 20px;
+      left: 20px;
     }
     .back-button:hover {
       background-color: #0d47a1;
+    }
+    .form-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .form-row > div {
+      flex: 1;
+    }
+    .form-row select {
+      width: 100%;
     }
   </style>
 </head>
@@ -69,32 +84,39 @@
 </script>
 
   <div class="container">
+    <!-- Button links oben im Container -->
+    <button onclick="window.location.href='dashboard.html'" class="back-button">
+      🔙 Zurück zur Übersicht
+    </button>
+
     <h2>📊 Statistik</h2>
 
-    <label for="modus">Modus:</label>
-    <select id="modus">
-      <option value="schueler">👨‍🎓 Schüler</option>
-      <option value="finanzen">💰 Finanzen</option>
-    </select>
+    <div class="form-row">
+      <div>
+        <label for="modus">Modus:</label>
+        <select id="modus">
+          <option value="schueler">👨‍🎓 Schüler</option>
+          <option value="finanzen">💰 Finanzen</option>
+        </select>
+      </div>
+      
+      <div>
+        <label for="zeitraum">Zeitraum:</label>
+        <select id="zeitraum">
+          <option value="woche">📆 Woche</option>
+          <option value="monat">📅 Monat</option>
+          <option value="jahr">📆 Jahr</option>
+          <option value="gesamt">📈 Gesamt</option>
+        </select>
+      </div>
+    </div>
 
     <div id="schuelerAuswahl" style="display:none;">
       <label for="schuelerSelect">Schüler auswählen:</label>
       <select id="schuelerSelect"></select>
     </div>
 
-    <label for="zeitraum">Zeitraum:</label>
-    <select id="zeitraum">
-      <option value="woche">📆 Woche</option>
-      <option value="monat">📅 Monat</option>
-      <option value="jahr">📆 Jahr</option>
-      <option value="gesamt">📈 Gesamt</option>
-    </select>
-
     <div class="stats" id="statsAnzeige"></div>
-
-    <button onclick="window.location.href='dashboard.html'" class="back-button">
-      🔙 Zurück zur Übersicht
-    </button>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
