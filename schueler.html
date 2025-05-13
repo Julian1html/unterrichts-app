@@ -68,18 +68,13 @@
       opacity: 1;
     }
 
-    input[type="text"] {
-      padding: 10px;
-      width: 70%;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      margin-right: 10px;
-      box-sizing: border-box;
+    .top-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
-    form button[type="submit"],
-    .zurueck-button {
+    .back-button, .open-modal-button {
       padding: 10px 20px;
       background: #1565c0;
       color: white;
@@ -89,35 +84,92 @@
       font-size: 16px;
     }
 
-    form button[type="submit"]:hover,
-    .zurueck-button:hover {
+    .back-button:hover, .open-modal-button:hover {
       background-color: #0d47a1;
     }
 
-    .zurueck-button {
-      margin-top: 20px;
-      display: inline-block;
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+      background-color: #f1f8ff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .modal input, .modal button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .modal button[type="submit"] {
+      background-color: #1565c0;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .modal button[type="submit"]:hover {
+      background-color: #0d47a1;
+    }
+
+    .close-button {
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      color: #444;
+      border: none;
+      background: none;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <script>
-  if (!sessionStorage.getItem("user")) {
-    window.location.href = "index.html";
-  }
-</script>
+    if (!sessionStorage.getItem("user")) {
+      window.location.href = "index.html";
+    }
+  </script>
 
   <div class="container">
+    <div class="top-buttons">
+      <button onclick="window.location.href='dashboard.html'" class="back-button">⬅️ Zurück zur Übersicht</button>
+      <button class="open-modal-button" onclick="openModal()">➕ Schüler hinzufügen</button>
+    </div>
+
     <h1>👨‍🎓 Schülerliste</h1>
     <ul id="schuelerListe"></ul>
+  </div>
 
-    <h3>Neuen Schüler hinzufügen</h3>
-    <form id="addForm">
-      <input type="text" id="nameInput" placeholder="Name des Schülers" required />
-      <button type="submit">➕ Hinzufügen</button>
-    </form>
-
-    <button onclick="window.location.href='dashboard.html'" class="zurueck-button">🔙 Zurück zum Dashboard</button>
+  <!-- MODAL -->
+  <div id="schuelerModal" class="modal">
+    <div class="modal-content">
+      <button class="close-button" onclick="closeModal()">×</button>
+      <h3>Neuen Schüler hinzufügen</h3>
+      <form id="addForm">
+        <input type="text" id="nameInput" placeholder="Name des Schülers" required />
+        <button type="submit">✅ Hinzufügen</button>
+      </form>
+    </div>
   </div>
 
   <!-- Firebase -->
@@ -178,8 +230,24 @@
         await db.collection("schueler").add({ name, beschreibung: "" });
         document.getElementById("nameInput").value = "";
         ladeSchueler();
+        closeModal();
       }
     });
+
+    function openModal() {
+      document.getElementById("schuelerModal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("schuelerModal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("schuelerModal");
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
 
     ladeSchueler();
   </script>
