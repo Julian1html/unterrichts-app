@@ -2,9 +2,8 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       margin: 0;
@@ -13,10 +12,10 @@
       color: #333;
     }
 
-    .logout-button {
+    .logout-button,
+    .notification-button {
       position: fixed;
       top: 15px;
-      right: 20px;
       background: #fff;
       border: 2px solid #ccc;
       border-radius: 8px;
@@ -29,10 +28,118 @@
       z-index: 1000;
     }
 
-    .logout-button:hover {
-      color: #d00;
-      border-color: #d00;
-      background-color: #fff0f0;
+    .logout-button { right: 20px; }
+    .notification-button { right: 70px; }
+
+    /* Hover Effekt für Glocke und Tür */
+    .logout-button:hover,
+    .notification-button:hover {
+      background-color: #e0f0ff;
+      border-color: #2a9be7;
+      color: #2a9be7;
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(42, 155, 231, 0.6);
+      transition: all 0.3s ease;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: red;
+      color: white;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 50%;
+    }
+
+    .reminder-panel {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      width: 320px;
+      max-height: 450px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      padding: 15px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 999;
+      overflow-y: auto;
+    }
+
+    .reminder-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .reminder-header button {
+      background-color: #2a9be7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .reminder-item {
+      background: #f9fafc;
+      border: 1px solid #ddd;
+      padding: 12px 10px;
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .reminder-item:hover {
+      background: #eef4fa;
+    }
+
+    .reminder-text {
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .reminder-date {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .reminder-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .reminder-item:hover .reminder-actions {
+      opacity: 1;
+    }
+
+    .reminder-actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 6px;
+    }
+
+    .reminder-actions button.edit:hover {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .reminder-actions button.done:hover {
+      background: #d1fae5;
+      color: #065f46;
     }
 
     .dashboard-container {
@@ -89,6 +196,50 @@
       font-weight: 600;
       color: #333;
     }
+
+    /* Modal Fenster */
+    .modal {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      width: 300px;
+      background: white;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      border-radius: 16px;
+      padding: 15px;
+      z-index: 1001;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .modal input {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .modal button {
+      background-color: #2a9be7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .modal button:hover {
+      background-color: #1d7fc4;
+    }
+    .modal button.cancel-btn {
+      background-color: #ccc;
+      color: #333;
+    }
+    .modal button.cancel-btn:hover {
+      background-color: #999;
+    }
   </style>
 </head>
 <body>
@@ -98,7 +249,24 @@
     }
   </script>
 
+  <button id="notification-btn" class="notification-button" title="Erinnerungen">🔔<span id="reminder-count" class="notification-badge" style="display:none;">0</span></button>
   <button id="logout-btn" class="logout-button" title="Logout">🚪</button>
+
+  <div id="reminder-panel" class="reminder-panel" tabindex="0" aria-label="Erinnerungsübersicht">
+    <div class="reminder-header">
+      <span><strong>Erinnerungen</strong></span>
+      <button onclick="openReminderModal()">+ Neu</button>
+    </div>
+    <div id="reminder-list"></div>
+  </div>
+
+  <!-- Modal zum Hinzufügen / Bearbeiten -->
+  <div id="reminder-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <input type="text" id="reminder-text" placeholder="Erinnerung" aria-label="Erinnerungstext"/>
+    <input type="date" id="reminder-date" aria-label="Erinnerungsdatum"/>
+    <button onclick="saveReminder()">Speichern</button>
+    <button onclick="cancelReminder()" class="cancel-btn">Abbrechen</button>
+  </div>
 
   <div class="dashboard-container">
     <h1>📚 Unterrichtsverwaltung</h1>
@@ -119,10 +287,135 @@
   </div>
 
   <script>
-    document.getElementById("logout-btn").addEventListener("click", () => {
+    const reminderPanel = document.getElementById('reminder-panel');
+    const notificationBtn = document.getElementById('notification-btn');
+    const reminderList = document.getElementById('reminder-list');
+    const reminderCount = document.getElementById('reminder-count');
+    const modal = document.getElementById('reminder-modal');
+    const reminderText = document.getElementById('reminder-text');
+    const reminderDate = document.getElementById('reminder-date');
+
+    let reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+    let editIndex = null;
+
+    function formatDate(dateStr) {
+      const [y, m, d] = dateStr.split("-");
+      return `${d}.${m}.${y}`;
+    }
+
+    function renderReminders() {
+      reminderList.innerHTML = "";
+      let today = new Date().toISOString().split("T")[0];
+      let dueCount = 0;
+
+      reminders = reminders.filter(r => !r.done);
+
+      // Nach Datum sortieren, nächster Termin oben
+      reminders.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+      reminders.forEach((reminder, index) => {
+        const item = document.createElement('div');
+        item.className = 'reminder-item';
+
+        const text = document.createElement('div');
+        text.className = 'reminder-text';
+        text.textContent = reminder.text;
+
+        const date = document.createElement('div');
+        date.className = 'reminder-date';
+        date.textContent = `Fällig am: ${formatDate(reminder.date)}`;
+
+        const actions = document.createElement('div');
+        actions.className = 'reminder-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit';
+        editBtn.innerHTML = '✏️';
+        editBtn.onclick = () => {
+          editIndex = index;
+          reminderText.value = reminder.text;
+          reminderDate.value = reminder.date;
+          modal.style.display = "flex";
+          reminderPanel.style.display = "flex"; // Übersicht offen lassen
+        };
+
+        const doneBtn = document.createElement('button');
+        doneBtn.className = 'done';
+        doneBtn.innerHTML = '✅';
+        doneBtn.onclick = (e) => {
+          e.stopPropagation(); // verhindert Schließen des Popups
+          reminders[index].done = true;
+          saveReminders();
+        };
+
+        actions.appendChild(editBtn);
+        actions.appendChild(doneBtn);
+
+        item.appendChild(text);
+        item.appendChild(date);
+        item.appendChild(actions);
+        reminderList.appendChild(item);
+
+        if (reminder.date <= today) dueCount++;
+      });
+
+      reminderCount.style.display = dueCount > 0 ? "inline-block" : "none";
+      reminderCount.textContent = dueCount;
+    }
+
+    function openReminderModal() {
+      editIndex = null;
+      reminderText.value = "";
+      reminderDate.value = new Date().toISOString().split("T")[0];
+      modal.style.display = "flex";
+      reminderPanel.style.display = "flex"; // Übersicht bleibt offen
+    }
+
+    function cancelReminder() {
+      modal.style.display = "none";
+      // Übersicht bleibt offen
+      reminderPanel.style.display = "flex";
+    }
+
+    function saveReminder() {
+      const text = reminderText.value.trim();
+      const date = reminderDate.value;
+      if (!text || !date) return;
+
+      if (editIndex !== null) {
+        reminders[editIndex] = { text, date, done: false };
+      } else {
+        reminders.push({ text, date, done: false });
+      }
+
+      saveReminders();
+      modal.style.display = "none";
+      // Übersicht bleibt offen
+      reminderPanel.style.display = "flex";
+    }
+
+    function saveReminders() {
+      localStorage.setItem('reminders', JSON.stringify(reminders));
+      renderReminders();
+    }
+
+    notificationBtn.onclick = () => {
+      if (reminderPanel.style.display === "flex") {
+        reminderPanel.style.display = "none";
+        modal.style.display = "none";
+      } else {
+        reminderPanel.style.display = "flex";
+      }
+    };
+
+    // Klick außerhalb schließt NICHTS mehr - daher komplett entfernt
+
+    document.getElementById('logout-btn').onclick = () => {
       sessionStorage.removeItem("user");
       window.location.href = "index.html";
-    });
+    };
+
+    renderReminders();
   </script>
 </body>
 </html>
