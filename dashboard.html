@@ -286,136 +286,137 @@
     </div>
   </div>
 
-  <script>
-    const reminderPanel = document.getElementById('reminder-panel');
-    const notificationBtn = document.getElementById('notification-btn');
-    const reminderList = document.getElementById('reminder-list');
-    const reminderCount = document.getElementById('reminder-count');
-    const modal = document.getElementById('reminder-modal');
-    const reminderText = document.getElementById('reminder-text');
-    const reminderDate = document.getElementById('reminder-date');
+  <!-- Der komplette HTML-Code ist identisch mit dem, den du oben gesendet hast, 
+aber im Skriptblock habe ich eine kleine Änderung vorgenommen, um die erledigten Erinnerungen
+nicht mehr aus dem Speicher zu löschen. -->
 
-    let reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
-    let editIndex = null;
+<script>
+  const reminderPanel = document.getElementById('reminder-panel');
+  const notificationBtn = document.getElementById('notification-btn');
+  const reminderList = document.getElementById('reminder-list');
+  const reminderCount = document.getElementById('reminder-count');
+  const modal = document.getElementById('reminder-modal');
+  const reminderText = document.getElementById('reminder-text');
+  const reminderDate = document.getElementById('reminder-date');
 
-    function formatDate(dateStr) {
-      const [y, m, d] = dateStr.split("-");
-      return `${d}.${m}.${y}`;
-    }
+  let reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+  let editIndex = null;
 
-    function renderReminders() {
-      reminderList.innerHTML = "";
-      let today = new Date().toISOString().split("T")[0];
-      let dueCount = 0;
+  function formatDate(dateStr) {
+    const [y, m, d] = dateStr.split("-");
+    return `${d}.${m}.${y}`;
+  }
 
-      reminders = reminders.filter(r => !r.done);
+  function renderReminders() {
+    reminderList.innerHTML = "";
+    let today = new Date().toISOString().split("T")[0];
+    let dueCount = 0;
 
-      // Nach Datum sortieren, nächster Termin oben
-      reminders.sort((a,b) => new Date(a.date) - new Date(b.date));
+    // Filter NICHT mehr – auch erledigte behalten
+    reminders.sort((a,b) => new Date(a.date) - new Date(b.date));
 
-      reminders.forEach((reminder, index) => {
-        const item = document.createElement('div');
-        item.className = 'reminder-item';
+    reminders.forEach((reminder, index) => {
+      if (reminder.done) return; // Nur unerledigte anzeigen
 
-        const text = document.createElement('div');
-        text.className = 'reminder-text';
-        text.textContent = reminder.text;
+      const item = document.createElement('div');
+      item.className = 'reminder-item';
 
-        const date = document.createElement('div');
-        date.className = 'reminder-date';
-        date.textContent = `Fällig am: ${formatDate(reminder.date)}`;
+      const text = document.createElement('div');
+      text.className = 'reminder-text';
+      text.textContent = reminder.text;
 
-        const actions = document.createElement('div');
-        actions.className = 'reminder-actions';
+      const date = document.createElement('div');
+      date.className = 'reminder-date';
+      date.textContent = `Fällig am: ${formatDate(reminder.date)}`;
 
-        const editBtn = document.createElement('button');
-        editBtn.className = 'edit';
-        editBtn.innerHTML = '✏️';
-        editBtn.onclick = () => {
-          editIndex = index;
-          reminderText.value = reminder.text;
-          reminderDate.value = reminder.date;
-          modal.style.display = "flex";
-          reminderPanel.style.display = "flex"; // Übersicht offen lassen
-        };
+      const actions = document.createElement('div');
+      actions.className = 'reminder-actions';
 
-        const doneBtn = document.createElement('button');
-        doneBtn.className = 'done';
-        doneBtn.innerHTML = '✅';
-        doneBtn.onclick = (e) => {
-          e.stopPropagation(); // verhindert Schließen des Popups
-          reminders[index].done = true;
-          saveReminders();
-        };
-
-        actions.appendChild(editBtn);
-        actions.appendChild(doneBtn);
-
-        item.appendChild(text);
-        item.appendChild(date);
-        item.appendChild(actions);
-        reminderList.appendChild(item);
-
-        if (reminder.date <= today) dueCount++;
-      });
-
-      reminderCount.style.display = dueCount > 0 ? "inline-block" : "none";
-      reminderCount.textContent = dueCount;
-    }
-
-    function openReminderModal() {
-      editIndex = null;
-      reminderText.value = "";
-      reminderDate.value = new Date().toISOString().split("T")[0];
-      modal.style.display = "flex";
-      reminderPanel.style.display = "flex"; // Übersicht bleibt offen
-    }
-
-    function cancelReminder() {
-      modal.style.display = "none";
-      // Übersicht bleibt offen
-      reminderPanel.style.display = "flex";
-    }
-
-    function saveReminder() {
-      const text = reminderText.value.trim();
-      const date = reminderDate.value;
-      if (!text || !date) return;
-
-      if (editIndex !== null) {
-        reminders[editIndex] = { text, date, done: false };
-      } else {
-        reminders.push({ text, date, done: false });
-      }
-
-      saveReminders();
-      modal.style.display = "none";
-      // Übersicht bleibt offen
-      reminderPanel.style.display = "flex";
-    }
-
-    function saveReminders() {
-      localStorage.setItem('reminders', JSON.stringify(reminders));
-      renderReminders();
-    }
-
-    notificationBtn.onclick = () => {
-      if (reminderPanel.style.display === "flex") {
-        reminderPanel.style.display = "none";
-        modal.style.display = "none";
-      } else {
+      const editBtn = document.createElement('button');
+      editBtn.className = 'edit';
+      editBtn.innerHTML = '✏️';
+      editBtn.onclick = () => {
+        editIndex = index;
+        reminderText.value = reminder.text;
+        reminderDate.value = reminder.date;
+        modal.style.display = "flex";
         reminderPanel.style.display = "flex";
-      }
-    };
+      };
 
-    // Klick außerhalb schließt NICHTS mehr - daher komplett entfernt
+      const doneBtn = document.createElement('button');
+      doneBtn.className = 'done';
+      doneBtn.innerHTML = '✅';
+      doneBtn.onclick = (e) => {
+        e.stopPropagation();
+        reminders[index].done = true;
+        saveReminders();
+      };
 
-    document.getElementById('logout-btn').onclick = () => {
-      sessionStorage.removeItem("user");
-      window.location.href = "index.html";
-    };
+      actions.appendChild(editBtn);
+      actions.appendChild(doneBtn);
 
+      item.appendChild(text);
+      item.appendChild(date);
+      item.appendChild(actions);
+      reminderList.appendChild(item);
+
+      if (reminder.date <= today) dueCount++;
+    });
+
+    reminderCount.style.display = dueCount > 0 ? "inline-block" : "none";
+    reminderCount.textContent = dueCount;
+  }
+
+  function openReminderModal() {
+    editIndex = null;
+    reminderText.value = "";
+    reminderDate.value = new Date().toISOString().split("T")[0];
+    modal.style.display = "flex";
+    reminderPanel.style.display = "flex";
+  }
+
+  function cancelReminder() {
+    modal.style.display = "none";
+    reminderPanel.style.display = "flex";
+  }
+
+  function saveReminder() {
+    const text = reminderText.value.trim();
+    const date = reminderDate.value;
+    if (!text || !date) return;
+
+    if (editIndex !== null) {
+      reminders[editIndex] = { text, date, done: false };
+    } else {
+      reminders.push({ text, date, done: false });
+    }
+
+    saveReminders();
+    modal.style.display = "none";
+    reminderPanel.style.display = "flex";
+  }
+
+  function saveReminders() {
+    localStorage.setItem('reminders', JSON.stringify(reminders));
     renderReminders();
-  </script>
+  }
+
+  notificationBtn.onclick = () => {
+    if (reminderPanel.style.display === "flex") {
+      reminderPanel.style.display = "none";
+      modal.style.display = "none";
+    } else {
+      reminderPanel.style.display = "flex";
+    }
+  };
+
+  document.getElementById('logout-btn').onclick = () => {
+    sessionStorage.removeItem("user");
+    window.location.href = "index.html";
+  };
+
+  renderReminders();
+</script>
+
 </body>
 </html>
